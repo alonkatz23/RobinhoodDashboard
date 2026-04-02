@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { loadData, saveData, fetchSpyPrice } from './api'
-import { calcAll, calcSummary, calcPersonStats } from './calc'
+import { calcAll, calcSummary, calcPersonStats, calcChartData } from './calc'
 import { Header } from './components/Header'
 import { SummaryCards } from './components/SummaryCards'
 import { PersonCards } from './components/PersonCards'
 import { TransactionTable } from './components/TransactionTable'
 import { AddEntryDialog } from './components/AddEntryDialog'
 import { PortfolioPieChart } from './components/PieChart'
+import { PortfolioCharts } from './components/PortfolioCharts'
 
 function useDebounce(fn, delay) {
   const timer = useRef(null)
@@ -141,6 +142,7 @@ export default function App() {
   const sisterVal   = spyData?.price ? spyShares * spyData.price : 0
   const summary     = calcSummary(rows, initial, transactions, sisterVal)
   const personStats = calcPersonStats(rows, initial, transactions, sisterVal)
+  const chartData    = calcChartData(rows, initial, transactions)
   const currentTotal = summary.current
 
   // ── Skeleton while loading ───────────────────────────────────────
@@ -186,7 +188,9 @@ export default function App() {
 
       <SummaryCards summary={summary} />
 
-      <PortfolioPieChart personStats={personStats} sisterVal={sisterVal} />
+      <PortfolioPieChart personStats={personStats} />
+
+      <PortfolioCharts chartData={chartData} />
 
       <PersonCards
         personStats={personStats}

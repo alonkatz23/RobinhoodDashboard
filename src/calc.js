@@ -96,3 +96,36 @@ export function calcPersonStats(rows, initial, transactions, sisterValue = 0) {
     return { ...p, deposited, gain, gainPct, grossPct, grossTotal }
   })
 }
+
+/**
+ * Builds time-series data for the portfolio value and gain/loss charts.
+ * Only tracks the active pool (Alon + Noam + Aba) — excludes Shai.
+ */
+export function calcChartData(rows, initial, transactions) {
+  const initDeposited = initial.alon + initial.noam + initial.aba
+  let cumulativeDeposits = initDeposited
+
+  const points = rows
+    .filter(r => r.tx.date)            // skip undated entries
+    .map(r => {
+      const { tx, newTotal, isMarket, pctChange } = r
+      if (!isMarket) cumulativeDeposits += (tx.amount || 0)
+      const gain    = newTotal - cumulativeDeposits
+      const gainPct = cumulativeDeposits > 0 ? (gain / cumulativeDeposits) * 100 : 0
+      const mktPct  = pctChange > 0 ? ((pctChange - 1) * 100) : 0
+
+      return {
+        date:      tx.date,
+        label:     tx.action || tx.date,
+        total:     Math.round(newTotal),
+        deposited: Math.round(cumulativeDeposits),
+        gain:      Math.round(gain),
+        gainPct:   parseFloat(gainPct.toFixed(2)),
+        mktPct:    parseFloat(mktPct.toFixed(2)),
+        isMarket,
+      }
+    })
+
+  return points
+}
+
