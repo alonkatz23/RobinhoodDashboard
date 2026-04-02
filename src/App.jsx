@@ -6,7 +6,6 @@ import { SummaryCards } from './components/SummaryCards'
 import { PersonCards } from './components/PersonCards'
 import { TransactionTable } from './components/TransactionTable'
 import { AddEntryDialog } from './components/AddEntryDialog'
-import { PortfolioPieChart } from './components/PieChart'
 import { PortfolioCharts } from './components/PortfolioCharts'
 
 function useDebounce(fn, delay) {
@@ -188,9 +187,7 @@ export default function App() {
 
       <SummaryCards summary={summary} />
 
-      <PortfolioPieChart personStats={personStats} />
-
-      <PortfolioCharts chartData={chartData} />
+      <PortfolioCharts chartData={chartData} personStats={personStats} />
 
       <PersonCards
         personStats={personStats}

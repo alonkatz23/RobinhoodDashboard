@@ -4,6 +4,22 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine, Cell,
 } from 'recharts'
+import { fmt } from '../fmt'
+
+const PIE_SLICES = [
+  { key: 'alon', label: 'Alon', color: '#7c6bff' },
+  { key: 'noam', label: 'Noam', color: '#00d4aa' },
+  { key: 'aba',  label: 'Aba',  color: '#f59e0b' },
+]
+
+function polarToXY(cx, cy, r, deg) {
+  const rad = ((deg - 90) * Math.PI) / 180
+  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) }
+}
+function slicePath(cx, cy, r, s, e) {
+  const p = polarToXY(cx, cy, r, s), q = polarToXY(cx, cy, r, e)
+  return `M ${cx} ${cy} L ${p.x} ${p.y} A ${r} ${r} 0 ${e - s > 180 ? 1 : 0} 1 ${q.x} ${q.y} Z`
+}
 
 function fmtK(v) {
   if (v == null) return ''
@@ -54,14 +70,67 @@ function GainTooltip({ active, payload }) {
   )
 }
 
-export function PortfolioCharts({ chartData }) {
+export function PortfolioCharts({ chartData, personStats }) {
   if (!chartData?.length) return null
+
+  // ── Pie data ─────────────────────────────────────────────────────
+  const pieValues = {
+    alon: personStats?.find(p => p.name === 'Alon')?.afterVal ?? 0,
+    noam: personStats?.find(p => p.name === 'Noam')?.afterVal ?? 0,
+    aba:  personStats?.find(p => p.name === 'Aba')?.afterVal  ?? 0,
+  }
+  const pieTotal = Object.values(pieValues).reduce((s, v) => s + v, 0)
+  let cursor = 0
+  const pieSlices = PIE_SLICES.map(s => {
+    const pct = pieTotal > 0 ? pieValues[s.key] / pieTotal : 0
+    const sweep = pct * 360
+    const start = cursor + 1, end = cursor + sweep - 1
+    cursor += sweep
+    return { ...s, pct, value: pieValues[s.key], start, end, sweep }
+  }).filter(s => s.sweep > 1)
+  const cx = 100, cy = 100, r = 80
 
   // Only show market updates on the gain chart (deposits inflate it misleadingly)
   const gainData = chartData.filter(d => d.isMarket || d === chartData[chartData.length - 1])
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
+
+      {/* ── Donut Pie ──────────────────────────────────────────────── */}
+      {pieTotal > 0 && (
+      <div className="rounded-xl border border-white/[0.07] bg-[#10141f] p-4 sm:p-5 flex flex-col">
+        <h2 className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-[#6b7694] mb-1">Distribution</h2>
+        <p className="text-[10px] text-[#6b7694]/70 mb-4">Active pool (Alon · Noam · Aba)</p>
+        <div className="flex-1 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <svg viewBox="0 0 200 200" className="w-32 h-32 shrink-0 drop-shadow-xl">
+            <defs>{PIE_SLICES.map(s => (
+              <radialGradient key={s.key} id={`p-${s.key}`} cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor={s.color} stopOpacity="1" />
+                <stop offset="100%" stopColor={s.color} stopOpacity="0.7" />
+              </radialGradient>
+            ))}</defs>
+            {pieSlices.map(s => <path key={s.key} d={slicePath(cx, cy, r, s.start, s.end)} fill={`url(#p-${s.key})`} className="hover:opacity-90 transition-opacity" />)}
+            <circle cx={cx} cy={cy} r={46} fill="#10141f" />
+            <text x={cx} y={cy - 5}  textAnchor="middle" fill="#e8ecf4" fontSize="13" fontWeight="800">{fmt(pieTotal, 0)}</text>
+            <text x={cx} y={cy + 11} textAnchor="middle" fill="#6b7694" fontSize="8" fontWeight="600" letterSpacing="1">TOTAL</text>
+          </svg>
+          <div className="space-y-2">
+            {pieSlices.map(s => (
+              <div key={s.key} className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: s.color }} />
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-semibold text-[#e8ecf4]">{s.label}</span>
+                    <span className="text-[10px] font-bold" style={{ color: s.color }}>{(s.pct * 100).toFixed(1)}%</span>
+                  </div>
+                  <div className="text-[10px] text-[#6b7694]">{fmt(s.value, 0)}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      )}
 
       {/* ── Portfolio Value Over Time ─────────────────────────────── */}
       <div className="rounded-xl border border-white/[0.07] bg-[#10141f] p-4 sm:p-5">
