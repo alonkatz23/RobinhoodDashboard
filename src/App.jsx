@@ -16,9 +16,10 @@ function useDebounce(fn, delay) {
 }
 
 export default function App() {
+  const [loading, setLoading]           = useState(true)
   const [transactions, setTransactions] = useState([])
   const [initial, setInitial]           = useState({ alon: 0, noam: 0, aba: 0 })
-  const [sister, setSister]             = useState({ name: 'Sister', spyShares: 0 })
+  const [sister, setSister]             = useState({ name: 'Shai', spyShares: 0 })
   const [spyData, setSpyData]           = useState(null)
   const [spyShares, setSpyShares]       = useState(0)
   const [isRefreshingSpy, setIsRefreshingSpy] = useState(false)
@@ -36,6 +37,7 @@ export default function App() {
       setSister(data.sister || { name: 'Sister', spyShares: 0 })
       setSpyShares(data.sister?.spyShares ?? 0)
       setSaveStatus({ state: 'saved', label: 'Loaded ✓' })
+      setLoading(false)
 
       // Restore SPY price from the last market update that has one saved
       const lastWithSpy = [...txs].reverse().find(t => t.type === 'market_update' && t.spyPrice)
@@ -131,6 +133,43 @@ export default function App() {
   const summary     = calcSummary(rows, initial, transactions, sisterVal)
   const personStats = calcPersonStats(rows, initial, transactions, sisterVal)
   const currentTotal = summary.current
+
+  // ── Skeleton while loading ───────────────────────────────────────
+  if (loading) {
+    return (
+      <div className="max-w-[1400px] mx-auto px-3 sm:px-6 pb-16 animate-pulse">
+        {/* Header skeleton */}
+        <div className="flex items-center justify-between py-5 sm:py-7 border-b border-white/[0.07] mb-6 sm:mb-9">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-white/[0.08]" />
+            <div className="space-y-1.5">
+              <div className="h-4 w-32 rounded bg-white/[0.08]" />
+              <div className="h-3 w-20 rounded bg-white/[0.05]" />
+            </div>
+          </div>
+          <div className="h-8 w-24 rounded-lg bg-white/[0.08]" />
+        </div>
+        {/* Summary cards skeleton */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5 sm:mb-6">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="rounded-xl bg-[#10141f] border border-white/[0.07] p-5 h-24" />
+          ))}
+        </div>
+        {/* Person cards skeleton */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="rounded-xl bg-[#10141f] border border-white/[0.07] p-5 h-48" />
+          ))}
+        </div>
+        {/* Table skeleton */}
+        <div className="space-y-2">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="rounded-xl bg-[#10141f] border border-white/[0.07] h-14" />
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="max-w-[1400px] mx-auto px-3 sm:px-6 pb-16">
