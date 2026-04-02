@@ -4,13 +4,13 @@ import { fmt, fmtPct, fmtDate } from '../fmt'
 function MetricCard({ label, value, sub, subColor }) {
   return (
     <Card>
-      <CardHeader className="pb-2 pt-5 px-5">
-        <CardTitle>{label}</CardTitle>
+      <CardHeader className="pb-1 pt-3 px-3 sm:pb-2 sm:pt-5 sm:px-5">
+        <CardTitle className="text-[9px] sm:text-[10px]">{label}</CardTitle>
       </CardHeader>
-      <CardContent className="px-5 pb-5">
-        <div className="text-[28px] font-black tracking-tight leading-none text-[#e8ecf4] mb-2">{value}</div>
+      <CardContent className="px-3 pb-3 sm:px-5 sm:pb-5">
+        <div className="text-lg sm:text-[28px] font-black tracking-tight leading-none text-[#e8ecf4] mb-1 sm:mb-2">{value}</div>
         {sub && (
-          <div className={`text-xs ${subColor || 'text-[#6b7694]'}`}>{sub}</div>
+          <div className={`text-[10px] sm:text-xs leading-tight ${subColor || 'text-[#6b7694]'}`}>{sub}</div>
         )}
       </CardContent>
     </Card>

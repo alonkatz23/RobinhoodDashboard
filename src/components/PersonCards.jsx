@@ -12,28 +12,28 @@ function PersonCard({ name, cls, afterVal, deposited, gain, pct, grossPct, siste
   const s = PERSON_STYLES[cls]
   const gainPos = gain >= 0
   return (
-    <div className="relative overflow-hidden rounded-xl border border-white/[0.07] bg-[#10141f] p-5 transition-all hover:border-white/[0.14] hover:-translate-y-0.5">
+    <div className="relative overflow-hidden rounded-xl border border-white/[0.07] bg-[#10141f] p-3 sm:p-5 transition-all hover:border-white/[0.14] hover:-translate-y-0.5">
       {/* Top accent bar */}
       <div className={`absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r ${s.top.replace('bg-gradient-to-r ','')}`} />
 
-      <div className="flex items-center gap-2 mb-4 mt-1">
-        <span className="text-base font-bold text-[#e8ecf4]">{name}</span>
+      <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-4 mt-0.5 sm:mt-1">
+        <span className="text-sm sm:text-base font-bold text-[#e8ecf4]">{name}</span>
         {extra}
       </div>
 
-      <div className="space-y-2.5">
+      <div className="space-y-1.5 sm:space-y-2.5">
         <Row label="Current Value" value={<span className={s.val}>{fmt(afterVal, 2)}</span>} />
         <Row label="Total Invested" value={fmt(deposited)} />
         <Row label="Market Gain/Loss"
           value={
             <span className={gainPos ? 'text-[#00d4aa]' : 'text-red-400'}>
               {(gain >= 0 ? '+' : '') + fmt(gain, 2)}
-              <span className="ml-1.5 text-xs opacity-70">({gainPos ? '+' : ''}{((gain / deposited) * 100).toFixed(2)}%)</span>
+              <span className="ml-1 text-[10px] sm:text-xs opacity-70">({gainPos ? '+' : ''}{((gain / deposited) * 100).toFixed(2)}%)</span>
             </span>
           }
         />
         <Row label="Active Pool %"
-          value={<span className="text-lg font-black text-[#e8ecf4]">{fmtPct(pct)}</span>}
+          value={<span className="text-base sm:text-lg font-black text-[#e8ecf4]">{fmtPct(pct)}</span>}
         />
         {sisterActive && grossPct != null && (
           <Row label="of Gross Account" value={<span className="text-[#6b7694]">{fmtPct(grossPct)}</span>} />
@@ -41,7 +41,7 @@ function PersonCard({ name, cls, afterVal, deposited, gain, pct, grossPct, siste
       </div>
 
       {/* Ownership bar */}
-      <div className="mt-4 h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+      <div className="mt-2 sm:mt-4 h-1 sm:h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
         <div
           className={`h-full rounded-full bg-gradient-to-r ${s.bar} transition-all duration-500`}
           style={{ width: `${(pct * 100).toFixed(2)}%` }}
@@ -158,8 +158,8 @@ function SisterCard({ sister, spyData, spyShares, onSharesChange, sisterVal, gro
 function Row({ label, value }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-xs text-[#6b7694]">{label}</span>
-      <span className="text-sm font-semibold text-[#e8ecf4]">{value}</span>
+      <span className="text-[10px] sm:text-xs text-[#6b7694]">{label}</span>
+      <span className="text-xs sm:text-sm font-semibold text-[#e8ecf4]">{value}</span>
     </div>
   )
 }
@@ -168,7 +168,7 @@ export function PersonCards({ personStats, sister, spyData, spyShares, onSharesC
   const grossTotal = personStats.reduce((s, p) => s + p.afterVal, 0) + sisterVal
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+    <div className="grid grid-cols-2 xl:grid-cols-4 gap-2 sm:gap-3 xl:gap-4 mb-4 sm:mb-6 xl:mb-8">
       {personStats.map(p => (
         <PersonCard
           key={p.name}
