@@ -24,7 +24,7 @@ function PersonCard({ name, cls, afterVal, deposited, gain, pct, grossPct, siste
       <div className="space-y-1.5 sm:space-y-2.5">
         <Row label="Current Value" value={<span className={s.val}>{fmt(afterVal, 2)}</span>} />
         <Row label="Total Invested" value={fmt(deposited)} />
-        <Row label="Market Gain/Loss"
+        <Row label="Market Gain/Loss" mobileLabel="Gain/Loss"
           value={
             <span className={gainPos ? 'text-[#00d4aa]' : 'text-red-400'}>
               {(gain >= 0 ? '+' : '') + fmt(gain, 2)}
@@ -32,11 +32,11 @@ function PersonCard({ name, cls, afterVal, deposited, gain, pct, grossPct, siste
             </span>
           }
         />
-        <Row label="Active Pool %"
+        <Row label="Active Pool %" mobileLabel="Active %"
           value={<span className="text-base sm:text-lg font-black text-[#e8ecf4]">{fmtPct(pct)}</span>}
         />
         {sisterActive && grossPct != null && (
-          <Row label="of Gross Account" value={<span className="text-[#6b7694]">{fmtPct(grossPct)}</span>} />
+          <Row label="of Gross Account" mobileLabel="Gross Acc." value={<span className="text-[#6b7694]">{fmtPct(grossPct)}</span>} />
         )}
       </div>
 
@@ -69,11 +69,11 @@ function SisterCard({ sister, spyData, spyShares, onSharesChange, sisterVal, gro
   }
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-white/[0.07] bg-[#10141f] p-5 transition-all hover:border-white/[0.14] hover:-translate-y-0.5">
+    <div className="relative overflow-hidden rounded-xl border border-white/[0.07] bg-[#10141f] p-3 sm:p-5 transition-all hover:border-white/[0.14] hover:-translate-y-0.5">
       <div className={`absolute top-0 left-0 right-0 h-[3px] ${s.top}`} />
 
-      <div className="flex items-center gap-2 mb-4 mt-1">
-        <span className="text-base font-bold text-[#e8ecf4]">{sister.name || 'Shai'}</span>
+      <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-4 mt-0.5 sm:mt-1">
+        <span className="text-sm sm:text-base font-bold text-[#e8ecf4]">{sister.name || 'Shai'}</span>
         <span className="text-[10px] font-bold uppercase tracking-wider bg-[#e84393]/15 text-[#e84393] border border-[#e84393]/30 rounded px-1.5 py-0.5">SPY</span>
         {price != null && (
           <span className={`ml-auto text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${isSnapshot ? 'bg-[#6b7694]/20 text-[#6b7694]' : 'bg-[#00d4aa]/15 text-[#00d4aa]'}`}>
@@ -82,7 +82,7 @@ function SisterCard({ sister, spyData, spyShares, onSharesChange, sisterVal, gro
         )}
       </div>
 
-      <div className="space-y-2.5">
+      <div className="space-y-1.5 sm:space-y-2.5">
         <Row label="Current Value"
           value={<span className="text-[#e84393]">{price != null ? fmt(sisterVal, 2) : '—'}</span>}
         />
@@ -117,18 +117,13 @@ function SisterCard({ sister, spyData, spyShares, onSharesChange, sisterVal, gro
           </div>
         </div>
         <Row label="SPY Price" value={price != null ? `$${price.toFixed(2)}` : '—'} />
-        <Row label="Day Change"
-          value={chgPct != null
-            ? <span className={isPos ? 'text-[#00d4aa]' : 'text-red-400'}>{isPos ? '+' : ''}{chgPct.toFixed(2)}%</span>
-            : '—'}
-        />
         <Row label="Total Invested" value={fmt(sister.initialInvestment || 0)} />
         {sister.initialInvestment != null && sisterVal > 0 && (() => {
           const sisterGain = sisterVal - sister.initialInvestment
           const sisterGainPct = sister.initialInvestment > 0 ? (sisterGain / sister.initialInvestment) * 100 : 0
           const gPos = sisterGain >= 0
           return (
-            <Row label="Market Gain/Loss"
+          <Row label="Market Gain/Loss" mobileLabel="Gain/Loss"
               value={
                 <span className={gPos ? 'text-[#00d4aa]' : 'text-red-400'}>
                   {(gPos ? '+' : '') + fmt(sisterGain, 2)}
@@ -139,13 +134,13 @@ function SisterCard({ sister, spyData, spyShares, onSharesChange, sisterVal, gro
           )
         })()}
         {sisterVal > 0 && (
-          <Row label="of Gross Account"
-            value={<span className="text-lg font-black text-[#e84393]">{fmtPct(grossPct)}</span>}
+          <Row label="of Gross Account" mobileLabel="Gross Acc."
+            value={<span className="text-base sm:text-lg font-black text-[#e84393]">{fmtPct(grossPct)}</span>}
           />
         )}
       </div>
 
-      <div className="mt-4 h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+      <div className="mt-2 sm:mt-4 h-1 sm:h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
         <div
           className={`h-full rounded-full bg-gradient-to-r ${s.bar} transition-all duration-500`}
           style={{ width: `${(grossPct * 100).toFixed(2)}%` }}
@@ -155,11 +150,13 @@ function SisterCard({ sister, spyData, spyShares, onSharesChange, sisterVal, gro
   )
 }
 
-function Row({ label, value }) {
+function Row({ label, mobileLabel, value }) {
   return (
-    <div className="flex items-center justify-between">
-      <span className="text-[10px] sm:text-xs text-[#6b7694]">{label}</span>
-      <span className="text-xs sm:text-sm font-semibold text-[#e8ecf4]">{value}</span>
+    <div className="flex items-center justify-between gap-1">
+      <span className="text-[10px] sm:text-xs text-[#6b7694] whitespace-nowrap shrink-0">
+        {mobileLabel ? <><span className="sm:hidden">{mobileLabel}</span><span className="hidden sm:inline">{label}</span></> : label}
+      </span>
+      <span className="text-xs sm:text-sm font-semibold text-[#e8ecf4] text-right">{value}</span>
     </div>
   )
 }

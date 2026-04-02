@@ -6,13 +6,13 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '.
 import { fmt } from '../fmt'
 
 export function AddEntryDialog({ open, onClose, onSubmit, currentTotal, spyData, spyShares }) {
-  const [type, setType]         = useState('deposit')
-  const [action, setAction]     = useState('')
-  const [person, setPerson]     = useState('Alon')
-  const [amount, setAmount]     = useState('')
+  const [type, setType]               = useState('deposit')
+  const [action, setAction]           = useState('')
+  const [person, setPerson]           = useState('Alon')
+  const [amount, setAmount]           = useState('')
   const [totalBefore, setTotalBefore] = useState('')
-  const [gross, setGross]       = useState('')
-  const [date, setDate]         = useState(() => new Date().toISOString().split('T')[0])
+  const [gross, setGross]             = useState('')
+  const [date, setDate]               = useState(() => new Date().toISOString().split('T')[0])
 
   const isMarket   = type === 'market_update'
   const spyPrice   = spyData?.price ?? null
@@ -20,12 +20,10 @@ export function AddEntryDialog({ open, onClose, onSubmit, currentTotal, spyData,
   const grossNum   = parseFloat(gross)
   const activeAuto = (!isNaN(grossNum) && grossNum > 0 && sisterVal != null) ? grossNum - sisterVal : null
 
-  // Auto-fill active when gross changes
   useEffect(() => {
     if (activeAuto != null) setTotalBefore(String(Math.round(activeAuto)))
   }, [gross, sisterVal])
 
-  // Reset when opened
   useEffect(() => {
     if (open) {
       setType('deposit')
@@ -50,10 +48,16 @@ export function AddEntryDialog({ open, onClose, onSubmit, currentTotal, spyData,
     }
   }
 
+  const Label = ({ children }) => (
+    <label className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-widest text-[#6b7694] block mb-1">
+      {children}
+    </label>
+  )
+
   const TypeBtn = ({ t, label }) => (
     <button
       onClick={() => setType(t)}
-      className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all border ${
+      className={`flex-1 py-1.5 sm:py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-all border ${
         type === t
           ? t === 'deposit'
             ? 'bg-[#7c6bff]/15 border-[#7c6bff]/40 text-[#a094ff]'
@@ -67,34 +71,35 @@ export function AddEntryDialog({ open, onClose, onSubmit, currentTotal, spyData,
 
   return (
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
-      <DialogContent className="w-[95vw] max-w-[520px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>➕ New Entry</DialogTitle>
+      <DialogContent className="w-[95vw] max-w-[520px] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+        <DialogHeader className="mb-2 sm:mb-4">
+          <DialogTitle className="text-base sm:text-lg">➕ New Entry</DialogTitle>
         </DialogHeader>
 
         {/* Type toggle */}
-        <div className="flex gap-2 mb-5">
+        <div className="flex gap-2 mb-3 sm:mb-5">
           <TypeBtn t="deposit"       label="💸 Deposit / Withdrawal" />
           <TypeBtn t="market_update" label="📊 Market Update" />
         </div>
 
         {/* Description */}
-        <div className="mb-4">
-          <label className="text-[11px] font-semibold uppercase tracking-widest text-[#6b7694] block mb-1.5">Description</label>
+        <div className="mb-2.5 sm:mb-4">
+          <Label>Description</Label>
           <Input
             value={action}
             onChange={e => setAction(e.target.value)}
             placeholder={isMarket ? 'e.g. Portfolio check – Apr 2026' : 'e.g. Alon added $10,000'}
+            className="h-8 sm:h-10 text-sm"
           />
         </div>
 
         {/* Deposit-only fields */}
         {!isMarket && (
-          <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-2.5 sm:mb-4">
             <div>
-              <label className="text-[11px] font-semibold uppercase tracking-widest text-[#6b7694] block mb-1.5">Person</label>
+              <Label>Person</Label>
               <Select value={person} onValueChange={setPerson}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-8 sm:h-10 text-sm"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Alon">Alon</SelectItem>
                   <SelectItem value="Noam">Noam</SelectItem>
@@ -103,52 +108,59 @@ export function AddEntryDialog({ open, onClose, onSubmit, currentTotal, spyData,
               </Select>
             </div>
             <div>
-              <label className="text-[11px] font-semibold uppercase tracking-widest text-[#6b7694] block mb-1.5">Amount ($)</label>
-              <Input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="e.g. 10000 or -1500" />
+              <Label>Amount ($)</Label>
+              <Input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="e.g. 10000" className="h-8 sm:h-10 text-sm" />
             </div>
           </div>
         )}
 
         {/* Gross calculator */}
-        <div className="rounded-xl border border-[#e84393]/20 bg-[#e84393]/[0.04] p-4 mb-4 space-y-2">
-          <p className="text-[11px] font-bold uppercase tracking-widest text-[#e84393] mb-2">📊 Gross Account Calculator</p>
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-[#6b7694]">Enter gross Robinhood total:</span>
+        <div className="rounded-xl border border-[#e84393]/20 bg-[#e84393]/[0.04] p-2.5 sm:p-4 mb-2.5 sm:mb-4 space-y-1.5 sm:space-y-2">
+          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-[#e84393]">📊 Gross Account Calculator</p>
+          <div className="flex items-center justify-between gap-2 text-xs sm:text-sm">
+            <span className="text-[#6b7694]">Gross Robinhood total:</span>
             <Input
               type="number"
               value={gross}
               onChange={e => setGross(e.target.value)}
-              placeholder="e.g. 450,000"
-              className="w-36 text-right"
+              placeholder="e.g. 450000"
+              className="w-28 sm:w-36 h-7 sm:h-9 text-right text-xs sm:text-sm"
             />
           </div>
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-[#6b7694]">Sister's SPY ({spyShares} shares @ {spyPrice ? '$' + spyPrice.toFixed(2) : '—'}):</span>
-            <span className="font-semibold text-[#e84393]">{sisterVal != null ? fmt(sisterVal, 2) : '— (refresh SPY)'}</span>
+          <div className="flex items-center justify-between text-xs sm:text-sm">
+            <span className="text-[#6b7694]">
+              <span className="sm:hidden">Shai's SPY:</span>
+              <span className="hidden sm:inline">Sister's SPY ({spyShares} shares @ {spyPrice ? '$' + spyPrice.toFixed(2) : '—'}):</span>
+            </span>
+            <span className="font-semibold text-[#e84393]">{sisterVal != null ? fmt(sisterVal, 2) : '—'}</span>
           </div>
-          <div className="flex items-center justify-between text-sm font-bold border-t border-white/[0.07] pt-2 mt-1">
-            <span>Active portfolio (→ fills below):</span>
+          <div className="flex items-center justify-between text-xs sm:text-sm font-bold border-t border-white/[0.07] pt-1.5">
+            <span>
+              <span className="sm:hidden">Active portfolio:</span>
+              <span className="hidden sm:inline">Active portfolio (→ fills below):</span>
+            </span>
             <span className="text-[#00d4aa]">{activeAuto != null ? fmt(activeAuto, 2) : '—'}</span>
           </div>
         </div>
 
         {/* Shared fields */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-4 sm:mb-6">
           <div>
-            <label className="text-[11px] font-semibold uppercase tracking-widest text-[#6b7694] block mb-1.5">
-              Active Portfolio Value ($)
-            </label>
-            <Input type="number" value={totalBefore} onChange={e => setTotalBefore(e.target.value)} placeholder="e.g. 425000" />
+            <Label>
+              <span className="sm:hidden">Active Value ($)</span>
+              <span className="hidden sm:inline">Active Portfolio Value ($)</span>
+            </Label>
+            <Input type="number" value={totalBefore} onChange={e => setTotalBefore(e.target.value)} placeholder="e.g. 425000" className="h-8 sm:h-10 text-sm" />
           </div>
           <div>
-            <label className="text-[11px] font-semibold uppercase tracking-widest text-[#6b7694] block mb-1.5">Date</label>
-            <Input type="date" value={date} onChange={e => setDate(e.target.value)} />
+            <Label>Date</Label>
+            <Input type="date" value={date} onChange={e => setDate(e.target.value)} className="h-8 sm:h-10 text-sm" />
           </div>
         </div>
 
         <div className="flex gap-3 justify-end">
-          <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSubmit}>{isMarket ? 'Log Update' : 'Add Transaction'}</Button>
+          <Button variant="ghost" onClick={onClose} className="h-8 sm:h-10 text-sm">Cancel</Button>
+          <Button onClick={handleSubmit} className="h-8 sm:h-10 text-sm">{isMarket ? 'Log Update' : 'Add Transaction'}</Button>
         </div>
       </DialogContent>
     </Dialog>

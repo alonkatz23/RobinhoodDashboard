@@ -6,6 +6,7 @@ import { SummaryCards } from './components/SummaryCards'
 import { PersonCards } from './components/PersonCards'
 import { TransactionTable } from './components/TransactionTable'
 import { AddEntryDialog } from './components/AddEntryDialog'
+import { PortfolioPieChart } from './components/PieChart'
 
 function useDebounce(fn, delay) {
   const timer = useRef(null)
@@ -184,6 +185,8 @@ export default function App() {
       <Header saveStatus={saveStatus} onAddEntry={() => setDialogOpen(true)} />
 
       <SummaryCards summary={summary} />
+
+      <PortfolioPieChart personStats={personStats} sisterVal={sisterVal} />
 
       <PersonCards
         personStats={personStats}
