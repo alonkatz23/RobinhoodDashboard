@@ -1,0 +1,171 @@
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { loadData, saveData, fetchSpyPrice } from './api'
+import { calcAll, calcSummary, calcPersonStats } from './calc'
+import { Header } from './components/Header'
+import { SummaryCards } from './components/SummaryCards'
+import { PersonCards } from './components/PersonCards'
+import { TransactionTable } from './components/TransactionTable'
+import { AddEntryDialog } from './components/AddEntryDialog'
+
+function useDebounce(fn, delay) {
+  const timer = useRef(null)
+  return useCallback((...args) => {
+    clearTimeout(timer.current)
+    timer.current = setTimeout(() => fn(...args), delay)
+  }, [fn, delay])
+}
+
+export default function App() {
+  const [transactions, setTransactions] = useState([])
+  const [initial, setInitial]           = useState({ alon: 0, noam: 0, aba: 0 })
+  const [sister, setSister]             = useState({ name: 'Sister', spyShares: 0 })
+  const [spyData, setSpyData]           = useState(null)
+  const [spyShares, setSpyShares]       = useState(0)
+  const [isRefreshingSpy, setIsRefreshingSpy] = useState(false)
+  const [nextId, setNextId]             = useState(1)
+  const [dialogOpen, setDialogOpen]     = useState(false)
+  const [saveStatus, setSaveStatus]     = useState({ state: 'idle', label: 'Connecting…' })
+
+  // ── Load ────────────────────────────────────────────────────────
+  useEffect(() => {
+    loadData().then(data => {
+      const txs = data.transactions || []
+      setInitial(data.initial || { alon: 0, noam: 0, aba: 0 })
+      setTransactions(txs)
+      setNextId(data.nextId || (txs.length + 1) || 1)
+      setSister(data.sister || { name: 'Sister', spyShares: 0 })
+      setSpyShares(data.sister?.spyShares ?? 0)
+      setSaveStatus({ state: 'saved', label: 'Loaded ✓' })
+
+      // Restore SPY price from the last market update that has one saved
+      const lastWithSpy = [...txs].reverse().find(t => t.type === 'market_update' && t.spyPrice)
+      if (lastWithSpy) {
+        setSpyData({ price: lastWithSpy.spyPrice, change: null, changePct: null, savedSnapshot: true, savedDate: lastWithSpy.date })
+      }
+    }).catch(() => {
+      setSaveStatus({ state: 'error', label: 'Server not reachable' })
+    })
+    // SPY is NOT auto-fetched — restored from last market update in data.json
+  }, [])
+
+  // ── SPY ─────────────────────────────────────────────────────────
+  async function refreshSpy() {
+    setIsRefreshingSpy(true)
+    try {
+      const data = await fetchSpyPrice()
+      setSpyData({ ...data, savedSnapshot: false })
+      return data
+    } catch (e) {
+      console.error('SPY fetch failed', e)
+      return null
+    } finally {
+      setIsRefreshingSpy(false)
+    }
+  }
+
+  // ── Save ────────────────────────────────────────────────────────
+  const doSave = useCallback(async (txs, init, sid, shares, nid) => {
+    setSaveStatus({ state: 'saving', label: 'Saving…' })
+    try {
+      await saveData({ initial: init, transactions: txs, nextId: nid, sister: { ...sid, spyShares: shares } })
+      setSaveStatus({ state: 'saved', label: 'Saved ✓' })
+    } catch {
+      setSaveStatus({ state: 'error', label: 'Save failed' })
+    }
+  }, [])
+
+  const debouncedSave = useDebounce(doSave, 600)
+
+  function triggerSave(txs, init, sid, shares, nid) {
+    setSaveStatus({ state: 'saving', label: 'Saving…' })
+    debouncedSave(txs, init, sid, shares, nid)
+  }
+
+  // ── Mutations ───────────────────────────────────────────────────
+  function updateInitial(key, value) {
+    const next = { ...initial, [key]: value }
+    setInitial(next)
+    triggerSave(transactions, next, sister, spyShares, nextId)
+  }
+
+  function updateTx(id, field, value) {
+    const next = transactions.map(t => t.id === id ? { ...t, [field]: value } : t)
+    setTransactions(next)
+    triggerSave(next, initial, sister, spyShares, nextId)
+  }
+
+  function deleteTx(id) {
+    if (!confirm('Delete this transaction?')) return
+    const next = transactions.filter(t => t.id !== id)
+    setTransactions(next)
+    triggerSave(next, initial, sister, spyShares, nextId)
+  }
+
+  async function addEntry(entry) {
+    let finalEntry = { ...entry }
+
+    // For market updates, fetch SPY price and embed it into the transaction
+    if (entry.type === 'market_update') {
+      const livespy = await refreshSpy()
+      if (livespy?.price) {
+        finalEntry.spyPrice = livespy.price
+      }
+    }
+
+    const next = [...transactions, { id: nextId, ...finalEntry }]
+    const nid  = nextId + 1
+    setTransactions(next)
+    setNextId(nid)
+    setDialogOpen(false)
+    triggerSave(next, initial, sister, spyShares, nid)
+  }
+
+  function updateSpyShares(shares) {
+    setSpyShares(shares)
+    triggerSave(transactions, initial, sister, shares, nextId)
+  }
+
+  // ── Derived ─────────────────────────────────────────────────────
+  const rows        = calcAll(transactions, initial)
+  const sisterVal   = spyData?.price ? spyShares * spyData.price : 0
+  const summary     = calcSummary(rows, initial, transactions, sisterVal)
+  const personStats = calcPersonStats(rows, initial, transactions, sisterVal)
+  const currentTotal = summary.current
+
+  return (
+    <div className="max-w-[1400px] mx-auto px-3 sm:px-6 pb-16">
+      <Header saveStatus={saveStatus} onAddEntry={() => setDialogOpen(true)} />
+
+      <SummaryCards summary={summary} />
+
+      <PersonCards
+        personStats={personStats}
+        sister={sister}
+        spyData={spyData}
+        spyShares={spyShares}
+        onSharesChange={updateSpyShares}
+        sisterVal={sisterVal}
+      />
+
+      <div className="mb-3">
+        <h2 className="text-base font-bold text-[#e8ecf4]">Transaction Log</h2>
+        <p className="text-xs text-[#6b7694] mt-0.5">All calculations update automatically · changes auto-save to data.json</p>
+      </div>
+
+      <TransactionTable
+        rows={rows}
+        onUpdateTx={updateTx}
+        onDeleteTx={deleteTx}
+      />
+
+      <AddEntryDialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        onSubmit={addEntry}
+        currentTotal={currentTotal}
+        spyData={spyData}
+        spyShares={spyShares}
+      />
+    </div>
+  )
+}

@@ -1,0 +1,87 @@
+{
+  "initial": {
+    "alon": 0,
+    "noam": 0,
+    "aba": 0
+  },
+  "transactions": [
+    {
+      "id": 0,
+      "action": "Alon's Initial Deposit",
+      "person": "Alon",
+      "amount": 64205,
+      "totalBefore": 0,
+      "date": "2025-06-01"
+    },
+    {
+      "id": 1,
+      "action": "Noam Added $36,000",
+      "person": "Noam",
+      "amount": 36000,
+      "totalBefore": 64205,
+      "date": "2025-06-09"
+    },
+    {
+      "id": 2,
+      "action": "Aba Added $100,000 for Crypto",
+      "person": "Aba",
+      "amount": 100000,
+      "totalBefore": 96430,
+      "date": "2025-06-23"
+    },
+    {
+      "id": 3,
+      "action": "Alon withdrew $1,500",
+      "person": "Alon",
+      "amount": -1500,
+      "totalBefore": 208000,
+      "date": "2025-06-30"
+    },
+    {
+      "id": 4,
+      "action": "Aba Added $50,000",
+      "person": "Aba",
+      "amount": 50000,
+      "totalBefore": 235350,
+      "date": "2025-07-16"
+    },
+    {
+      "id": 5,
+      "action": "Aba Added $50,000",
+      "person": "Aba",
+      "amount": 50000,
+      "totalBefore": 330100,
+      "date": null
+    },
+    {
+      "id": 6,
+      "action": "Alon Added $38000",
+      "person": "Alon",
+      "amount": 38000,
+      "totalBefore": 301635,
+      "date": "2026-01-10"
+    },
+    {
+      "id": 8,
+      "action": "Noam Added 38000",
+      "person": "Noam",
+      "amount": 38000,
+      "totalBefore": 339635,
+      "date": "2026-01-10"
+    },
+    {
+      "id": 10,
+      "type": "market_update",
+      "action": "April 2, 2026",
+      "totalBefore": 312685,
+      "date": "2026-04-02",
+      "spyPrice": 655.72
+    }
+  ],
+  "nextId": 11,
+  "sister": {
+    "name": "Shai",
+    "spyShares": 53.498584,
+    "initialInvestment": 36000
+  }
+}

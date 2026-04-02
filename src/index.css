@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 47% 6%;
+    --foreground: 220 22% 92%;
+    --card: 224 40% 9%;
+    --card-foreground: 220 22% 92%;
+    --border: 220 20% 12%;
+    --input: 220 20% 14%;
+    --ring: 248 100% 70%;
+    --primary: 248 100% 70%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 20% 16%;
+    --secondary-foreground: 220 22% 92%;
+    --muted: 220 20% 14%;
+    --muted-foreground: 226 25% 52%;
+    --accent: 165 100% 42%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --radius: 0.75rem;
+
+    /* Person colors */
+    --alon: 248 100% 70%;
+    --noam: 165 100% 42%;
+    --aba: 36 100% 57%;
+    --sister: 330 78% 57%;
+    --gain: 165 100% 42%;
+    --loss: 0 72% 68%;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+    background: #0a0d14;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 70% 10%, rgba(124,107,255,0.1) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 35% at 10% 80%, rgba(0,212,170,0.07) 0%, transparent 55%);
+    pointer-events: none; z-index: 0;
+  }
+  #root { position: relative; z-index: 1; }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0a0d14; }
+::-webkit-scrollbar-thumb { background: #1e2440; border-radius: 3px; }
+
+/* Subtle number input arrows removal */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+input[type=number] { -moz-appearance: textfield; }
