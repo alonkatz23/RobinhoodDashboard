@@ -1,7 +1,12 @@
 import { TrendingUp, Save, Loader2 } from 'lucide-react'
 import { Button } from './ui/button'
 
-export function Header({ saveStatus, onAddEntry }) {
+export function Header({ saveStatus, onAddEntry, lastDate }) {
+  function fmtDate(d) {
+    if (!d) return null
+    const [y, m, day] = d.split('-')
+    return new Date(+y, +m - 1, +day).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  }
   const dotColor = {
     saved:   'bg-[#00d4aa]',
     saving:  'bg-[#ffcc6b] animate-pulse',
@@ -24,7 +29,9 @@ export function Header({ saveStatus, onAddEntry }) {
         </div>
         <div>
           <h1 className="text-base sm:text-xl font-bold tracking-tight text-[#e8ecf4]">Portfolio Tracker</h1>
-          <span className="hidden sm:block text-xs text-[#6b7694]">Alon · Noam · Aba</span>
+          <span className="text-[10px] sm:text-xs text-[#6b7694]">
+            {lastDate ? `Updated ${fmtDate(lastDate)}` : 'Alon · Noam · Aba'}
+          </span>
         </div>
       </div>
 

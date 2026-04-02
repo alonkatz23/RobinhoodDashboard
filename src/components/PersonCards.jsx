@@ -26,9 +26,9 @@ function PersonCard({ name, cls, afterVal, deposited, gain, pct, grossPct, siste
         <Row label="Total Invested" value={fmt(deposited)} />
         <Row label="Market Gain/Loss" mobileLabel="Gain/Loss"
           value={
-            <span className={gainPos ? 'text-[#00d4aa]' : 'text-red-400'}>
-              {(gain >= 0 ? '+' : '') + fmt(gain, 2)}
-              <span className="ml-1 text-[10px] sm:text-xs opacity-70">({gainPos ? '+' : ''}{((gain / deposited) * 100).toFixed(2)}%)</span>
+            <span className={`flex flex-col items-end ${gainPos ? 'text-[#00d4aa]' : 'text-red-400'}`}>
+              <span>{(gain >= 0 ? '+' : '') + fmt(gain, 2)}</span>
+              <span className="text-[10px] sm:text-xs opacity-70">{gainPos ? '+' : ''}{((gain / deposited) * 100).toFixed(2)}%</span>
             </span>
           }
         />
@@ -125,9 +125,9 @@ function SisterCard({ sister, spyData, spyShares, onSharesChange, sisterVal, gro
           return (
           <Row label="Market Gain/Loss" mobileLabel="Gain/Loss"
               value={
-                <span className={gPos ? 'text-[#00d4aa]' : 'text-red-400'}>
-                  {(gPos ? '+' : '') + fmt(sisterGain, 2)}
-                  <span className="ml-1.5 text-xs opacity-70">({gPos ? '+' : ''}{sisterGainPct.toFixed(2)}%)</span>
+                <span className={`flex flex-col items-end ${gPos ? 'text-[#00d4aa]' : 'text-red-400'}`}>
+                  <span>{(gPos ? '+' : '') + fmt(sisterGain, 2)}</span>
+                  <span className="text-[10px] sm:text-xs opacity-70">{gPos ? '+' : ''}{sisterGainPct.toFixed(2)}%</span>
                 </span>
               }
             />

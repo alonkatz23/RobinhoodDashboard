@@ -183,7 +183,7 @@ export default function App() {
 
   return (
     <div className="max-w-[1400px] mx-auto px-3 sm:px-6 pb-16">
-      <Header saveStatus={saveStatus} onAddEntry={() => setDialogOpen(true)} />
+      <Header saveStatus={saveStatus} onAddEntry={() => setDialogOpen(true)} lastDate={summary.lastDate} />
 
       <SummaryCards summary={summary} />
 
