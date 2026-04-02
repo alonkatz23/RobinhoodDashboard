@@ -101,8 +101,8 @@ export function PortfolioCharts({ chartData, personStats }) {
       <div className="rounded-xl border border-white/[0.07] bg-[#10141f] p-4 sm:p-5 flex flex-col">
         <h2 className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-[#6b7694] mb-1">Distribution</h2>
         <p className="text-[10px] text-[#6b7694]/70 mb-4">Active pool (Alon · Noam · Aba)</p>
-        <div className="flex-1 flex flex-col sm:flex-row items-center justify-center gap-4">
-          <svg viewBox="0 0 200 200" className="w-32 h-32 shrink-0 drop-shadow-xl">
+        <div className="flex-1 flex items-center justify-center gap-6">
+          <svg viewBox="0 0 200 200" className="w-[45%] max-w-[180px] shrink-0 drop-shadow-xl">
             <defs>{PIE_SLICES.map(s => (
               <radialGradient key={s.key} id={`p-${s.key}`} cx="50%" cy="50%" r="50%">
                 <stop offset="0%" stopColor={s.color} stopOpacity="1" />
