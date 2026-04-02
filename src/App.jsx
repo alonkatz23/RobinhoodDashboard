@@ -16,38 +16,44 @@ function useDebounce(fn, delay) {
 }
 
 export default function App() {
-  const [loading, setLoading]           = useState(true)
-  const [transactions, setTransactions] = useState([])
-  const [initial, setInitial]           = useState({ alon: 0, noam: 0, aba: 0 })
-  const [sister, setSister]             = useState({ name: 'Shai', spyShares: 0 })
+  const CACHE_KEY = 'portfolio_cache'
+  function readCache() { try { return JSON.parse(localStorage.getItem(CACHE_KEY)) } catch { return null } }
+  function writeCache(d) { try { localStorage.setItem(CACHE_KEY, JSON.stringify(d)) } catch {} }
+
+  const cached = readCache()
+  const [loading, setLoading]           = useState(!cached)   // skeleton only on very first visit
+  const [transactions, setTransactions] = useState(cached?.transactions || [])
+  const [initial, setInitial]           = useState(cached?.initial || { alon: 0, noam: 0, aba: 0 })
+  const [sister, setSister]             = useState(cached?.sister || { name: 'Shai', spyShares: 0 })
   const [spyData, setSpyData]           = useState(null)
-  const [spyShares, setSpyShares]       = useState(0)
+  const [spyShares, setSpyShares]       = useState(cached?.sister?.spyShares ?? 0)
   const [isRefreshingSpy, setIsRefreshingSpy] = useState(false)
-  const [nextId, setNextId]             = useState(1)
+  const [nextId, setNextId]             = useState(cached?.nextId ?? 1)
   const [dialogOpen, setDialogOpen]     = useState(false)
   const [saveStatus, setSaveStatus]     = useState({ state: 'idle', label: 'Connecting…' })
 
-  // ── Load ────────────────────────────────────────────────────────
+  // ── Load (stale-while-revalidate) ───────────────────────────────
   useEffect(() => {
     loadData().then(data => {
       const txs = data.transactions || []
       setInitial(data.initial || { alon: 0, noam: 0, aba: 0 })
       setTransactions(txs)
-      setNextId(data.nextId || (txs.length + 1) || 1)
-      setSister(data.sister || { name: 'Sister', spyShares: 0 })
+      setNextId(data.nextId || 1)
+      setSister(data.sister || { name: 'Shai', spyShares: 0 })
       setSpyShares(data.sister?.spyShares ?? 0)
       setSaveStatus({ state: 'saved', label: 'Loaded ✓' })
       setLoading(false)
+      writeCache(data)   // keep cache fresh for next refresh
 
-      // Restore SPY price from the last market update that has one saved
+      // Restore SPY price from the last market update
       const lastWithSpy = [...txs].reverse().find(t => t.type === 'market_update' && t.spyPrice)
       if (lastWithSpy) {
         setSpyData({ price: lastWithSpy.spyPrice, change: null, changePct: null, savedSnapshot: true, savedDate: lastWithSpy.date })
       }
     }).catch(() => {
       setSaveStatus({ state: 'error', label: 'Server not reachable' })
+      setLoading(false)
     })
-    // SPY is NOT auto-fetched — restored from last market update in data.json
   }, [])
 
   // ── SPY ─────────────────────────────────────────────────────────
@@ -69,7 +75,9 @@ export default function App() {
   const doSave = useCallback(async (txs, init, sid, shares, nid) => {
     setSaveStatus({ state: 'saving', label: 'Saving…' })
     try {
-      await saveData({ initial: init, transactions: txs, nextId: nid, sister: { ...sid, spyShares: shares } })
+      const payload = { initial: init, transactions: txs, nextId: nid, sister: { ...sid, spyShares: shares } }
+      await saveData(payload)
+      writeCache(payload)   // keep localStorage in sync after every save
       setSaveStatus({ state: 'saved', label: 'Saved ✓' })
     } catch {
       setSaveStatus({ state: 'error', label: 'Save failed' })
