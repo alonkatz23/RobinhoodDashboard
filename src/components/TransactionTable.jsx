@@ -169,8 +169,8 @@ export function TransactionTable({ rows, onUpdateTx, onDeleteTx }) {
               <div className="flex items-center gap-2">
                 <input
                   type="date"
-                  defaultValue={tx.date || ''}
-                  onBlur={e => onUpdateTx(tx.id, 'date', e.target.value || null)}
+                  value={tx.date || ''}
+                  onChange={e => onUpdateTx(tx.id, 'date', e.target.value || null)}
                   className="bg-transparent border-none text-[11px] text-[#6b7694] outline-none cursor-pointer w-[90px]"
                 />
                 <button
