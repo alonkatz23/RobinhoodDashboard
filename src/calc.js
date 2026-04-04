@@ -100,32 +100,38 @@ export function calcPersonStats(rows, initial, transactions, sisterValue = 0) {
 /**
  * Builds time-series data for the portfolio value and gain/loss charts.
  * Only tracks the active pool (Alon + Noam + Aba) — excludes Shai.
+ *
+ * IMPORTANT: we must walk ALL rows to keep cumulativeDeposits accurate,
+ * then filter to only dated points for display.  Filtering before the map
+ * caused undated deposits to be missing from cumulativeDeposits while
+ * still being included in newTotal, making gain values wrong.
  */
 export function calcChartData(rows, initial, transactions) {
   const initDeposited = initial.alon + initial.noam + initial.aba
   let cumulativeDeposits = initDeposited
 
-  const points = rows
-    .filter(r => r.tx.date)            // skip undated entries
-    .map(r => {
-      const { tx, newTotal, isMarket, pctChange } = r
-      if (!isMarket) cumulativeDeposits += (tx.amount || 0)
-      const gain    = newTotal - cumulativeDeposits
-      const gainPct = cumulativeDeposits > 0 ? (gain / cumulativeDeposits) * 100 : 0
-      const mktPct  = pctChange > 0 ? ((pctChange - 1) * 100) : 0
+  // Walk every row (including undated) so deposits are always counted
+  const allPoints = rows.map(r => {
+    const { tx, newTotal, isMarket, pctChange } = r
+    if (!isMarket) cumulativeDeposits += (tx.amount || 0)
 
-      return {
-        date:      tx.date,
-        label:     tx.action || tx.date,
-        total:     Math.round(newTotal),
-        deposited: Math.round(cumulativeDeposits),
-        gain:      Math.round(gain),
-        gainPct:   parseFloat(gainPct.toFixed(2)),
-        mktPct:    parseFloat(mktPct.toFixed(2)),
-        isMarket,
-      }
-    })
+    const gain    = newTotal - cumulativeDeposits
+    const gainPct = cumulativeDeposits > 0 ? (gain / cumulativeDeposits) * 100 : 0
+    const mktPct  = pctChange > 0 ? ((pctChange - 1) * 100) : 0
 
-  return points
+    return {
+      date:      tx.date ?? null,
+      label:     tx.action || tx.date || `Tx #${tx.id}`,
+      total:     Math.round(newTotal),
+      deposited: Math.round(cumulativeDeposits),
+      gain:      Math.round(gain),
+      gainPct:   parseFloat(gainPct.toFixed(2)),
+      mktPct:    parseFloat(mktPct.toFixed(2)),
+      isMarket,
+    }
+  })
+
+  // Only return dated points — the running totals are already correct above
+  return allPoints.filter(p => p.date)
 }
 
