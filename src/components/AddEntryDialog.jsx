@@ -5,7 +5,7 @@ import { Input } from './ui/input'
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from './ui/select'
 import { fmt } from '../fmt'
 
-export function AddEntryDialog({ open, onClose, onSubmit, currentTotal, spyData, spyShares }) {
+export function AddEntryDialog({ open, onClose, onSubmit, currentTotal, spyData, spyShares, onRefreshSpy }) {
   const [type, setType]               = useState('deposit')
   const [action, setAction]           = useState('')
   const [person, setPerson]           = useState('Alon')
@@ -13,6 +13,8 @@ export function AddEntryDialog({ open, onClose, onSubmit, currentTotal, spyData,
   const [totalBefore, setTotalBefore] = useState('')
   const [gross, setGross]             = useState('')
   const [date, setDate]               = useState(() => new Date().toISOString().split('T')[0])
+  const [spyLoading, setSpyLoading]   = useState(false)
+  const [spyError, setSpyError]       = useState(false)
 
   const isMarket   = type === 'market_update'
   const spyPrice   = spyData?.price ?? null
@@ -30,8 +32,16 @@ export function AddEntryDialog({ open, onClose, onSubmit, currentTotal, spyData,
       setAction('')
       setAmount('')
       setGross('')
+      setSpyError(false)
       setDate(new Date().toISOString().split('T')[0])
       setTotalBefore(String(Math.round(currentTotal)))
+      // Auto-refresh SPY so gross calculator has a live price
+      if (onRefreshSpy) {
+        setSpyLoading(true)
+        onRefreshSpy()
+          .catch(() => setSpyError(true))
+          .finally(() => setSpyLoading(false))
+      }
     }
   }, [open, currentTotal])
 
@@ -116,7 +126,11 @@ export function AddEntryDialog({ open, onClose, onSubmit, currentTotal, spyData,
 
         {/* Gross calculator */}
         <div className="rounded-xl border border-[#e84393]/20 bg-[#e84393]/[0.04] p-2.5 sm:p-4 mb-2.5 sm:mb-4 space-y-1.5 sm:space-y-2">
-          <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-[#e84393]">📊 Gross Account Calculator</p>
+          <div className="flex items-center gap-2">
+            <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-[#e84393]">📊 Gross Account Calculator</p>
+            {spyLoading && <span className="text-[9px] text-[#6b7694] animate-pulse">fetching SPY…</span>}
+            {spyError   && <span className="text-[9px] text-red-400">SPY unavailable</span>}
+          </div>
           <div className="flex items-center justify-between gap-2 text-xs sm:text-sm">
             <span className="text-[#6b7694]">Gross Robinhood total:</span>
             <Input
@@ -130,9 +144,9 @@ export function AddEntryDialog({ open, onClose, onSubmit, currentTotal, spyData,
           <div className="flex items-center justify-between text-xs sm:text-sm">
             <span className="text-[#6b7694]">
               <span className="sm:hidden">Shai's SPY:</span>
-              <span className="hidden sm:inline">Sister's SPY ({spyShares} shares @ {spyPrice ? '$' + spyPrice.toFixed(2) : '—'}):</span>
+              <span className="hidden sm:inline">Sister's SPY ({spyShares} shares @ {spyLoading ? '…' : spyPrice ? '$' + spyPrice.toFixed(2) : '—'}):</span>
             </span>
-            <span className="font-semibold text-[#e84393]">{sisterVal != null ? fmt(sisterVal, 2) : '—'}</span>
+            <span className="font-semibold text-[#e84393]">{spyLoading ? '…' : sisterVal != null ? fmt(sisterVal, 2) : '—'}</span>
           </div>
           <div className="flex items-center justify-between text-xs sm:text-sm font-bold border-t border-white/[0.07] pt-1.5">
             <span>

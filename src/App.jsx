@@ -216,6 +216,7 @@ export default function App() {
         currentTotal={currentTotal}
         spyData={spyData}
         spyShares={spyShares}
+        onRefreshSpy={refreshSpy}
       />
     </div>
   )
