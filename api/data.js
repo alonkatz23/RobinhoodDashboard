@@ -54,10 +54,14 @@ export default async function handler(req, res) {
     const config = {}
     cfgResult.rows.forEach(r => { config[r.key] = r.value })
 
+    // Always derive nextId from actual max id to prevent conflicts
+    const maxId = txResult.rows.reduce((m, r) => Math.max(m, r.id), -1)
+    const nextId = maxId + 1
+
     return res.json({
       initial:      config.initial  || { alon: 0, noam: 0, aba: 0 },
       transactions: txResult.rows.map(rowToTx),
-      nextId:       config.meta?.nextId ?? 1,
+      nextId,
       sister:       config.sister   || { name: 'Shai', spyShares: 0, initialInvestment: 36000 },
     })
   }
